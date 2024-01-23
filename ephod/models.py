@@ -241,13 +241,13 @@ class ResidualLightAttention(nn.Module):
 
 class EpHodModel():
     
-    def __init__(self):
+    def __init__(self, rlat_path=None, params_path=None):
 
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         if self.device != 'cuda':
             print('WARNING: You are not using a GPU which will be slow.')
         self.esm1v_model, self.esm1v_batch_converter = self.load_ESM1v_model()
-        self.rlat_model = self.load_RLAT_model()
+        self.rlat_model = self.load_RLAT_model(rlat_path=rlat_path, params_path=params_path)
         _ = self.esm1v_model.eval()
         _ = self.rlat_model.eval()
         
@@ -277,13 +277,15 @@ class EpHodModel():
         return emb
     
     
-    def load_RLAT_model(self):
+    def load_RLAT_model(self, rlat_path=None, params_path=None):
         '''Return fine-tuned residual light attention top model'''
 
         # Path to RLAT model
         this_dir, this_filename = os.path.split(__file__)
-        params_path = os.path.join(this_dir, 'saved_models', 'RLAT', 'params.json')
-        rlat_path = os.path.join(this_dir, 'saved_models', 'RLAT', 'RLAT.pt')
+        if not params_path:
+            params_path = os.path.join(this_dir, 'saved_models', 'RLAT', 'params.json')
+        if not rlat_path:
+            rlat_path = os.path.join(this_dir, 'saved_models', 'RLAT', 'RLAT.pt')
         
         # Download RLAT model from google drive if not in path
         if not os.path.exists(rlat_path):
